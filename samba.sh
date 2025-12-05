@@ -51,6 +51,11 @@ add_user() {
         usermod -g "$groupname" "$username" > /dev/null || { echo "Failed to update group for user $username"; return 1; }
     fi
 
+    # Check and fix home directory owner/group
+    if [ -z "$(find "$homedir" -user "$username" -print -prune -o -prune)" ] || [ -z "$(find "$homedir" -group "$groupname" -print -prune -o -prune)" ] ; then
+	    chown -R $username:$groupname $homedir
+    fi
+
     # Check if the user is a samba user
     pdb_output=$(pdbedit -s "$cfg" -L)  #Do not combine the two commands into one, as this could lead to issues with the execution order and proper passing of variables. 
     if echo "$pdb_output" | grep -q "^$username:"; then
