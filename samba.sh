@@ -76,6 +76,8 @@ add_user() {
 # Set variables for group and share directory
 group="smb"
 share="/storage"
+home_share="$share/users"
+conf_share="$share/config"
 secret="/run/secrets/pass"
 config="/etc/samba/smb.conf"
 users="/etc/samba/users.conf"
@@ -149,6 +151,8 @@ mkdir -p /var/lib/samba/bind-dns
 
 # Check if multi-user mode is enabled
 if [ -f "$users" ] && [ -s "$users" ]; then
+    uid=10000
+    mkdir -p "$home_share" || { echo "Failed to create directory $home_share"; exit 1; }
 
     while IFS= read -r line || [[ -n ${line} ]]; do
 
@@ -156,8 +160,14 @@ if [ -f "$users" ] && [ -s "$users" ]; then
         [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
 
         # Split each line by colon and assign to variables
-        IFS=':' read -r username uid groupname gid password homedir <<< "$line"
-
+        # IFS=':' read -r username uid groupname gid password homedir <<< "$line"
+	# remove 'unnecessary' fields 
+        IFS=':' read -r username password <<< "$line"
+	# fill 'required' fields
+	uid=$(($uid + 1))
+	groupname=$username
+	gid=$uid
+	homedir="$home_share/$username"
         # Check if all required fields are present
         if [[ -z "$username" || -z "$uid" || -z "$groupname" || -z "$gid" || -z "$password" ]]; then
             echo "Skipping incomplete line: $line"
