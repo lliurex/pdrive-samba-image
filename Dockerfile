@@ -13,7 +13,8 @@ RUN set -eu && \
     rm -f /etc/samba/smb.conf && \
     rm -rf /tmp/* /var/cache/apk/*
 
-COPY --chmod=755 samba.sh /usr/bin/samba.sh
+COPY --chmod=755 samba.sh /usr/bin/samba-default.sh
+COPY --chmod=755 pdrive.sh /usr/bin/pdrive.sh
 COPY --chmod=664 smb.conf /etc/samba/smb.default
 
 VOLUME /storage
@@ -29,4 +30,4 @@ ENV RW=true
 
 HEALTHCHECK --interval=60s --timeout=15s CMD smbclient --configfile=/etc/samba.conf -L \\localhost -U % -m SMB3
 
-ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/samba.sh"]
+ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/pdrive.sh"]
