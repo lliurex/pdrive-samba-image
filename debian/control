@@ -1,0 +1,13 @@
+Source: pdrive-samba-image
+Section: misc
+Priority: optional
+Maintainer: LliureX Team <lliurex@gva.es> 
+Standards-Version: 4.3.0
+Build-Depends: debhelper-compat (= 10), podman
+Homepage: https://github.com/lliurex/pdrive-samba-image
+
+Package: pdrive-samba-image
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: pdrive container image
+ This package installs the container image for the pdrive utility

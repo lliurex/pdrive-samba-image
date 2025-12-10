@@ -1,0 +1,16 @@
+#!/usr/bin/make -f
+%:
+	dh $@
+
+override_dh_prep:
+	dh_prep
+	./image-build.sh pdrive-image-latest.tar
+
+override_dh_clean:
+	rm -f pdrive-image-latest.tar
+	dh_clean
+
+override_dh_install:
+	dh_install
+	dh_install --package=pdrive-samba-image pdrive-image-latest.tar /usr/share/pdrive-samba-image
+
