@@ -1,0 +1,62 @@
+#!/bin/sh
+POD_IMAGE_NAME="docker.io/lliurex/pdrive-samba"
+POD_IMAGE="$POD_IMAGE_NAME:latest"
+PODMAN_CMD="podman --events-backend none"
+
+POD_FILE="pdrive-samba"
+
+usage(){
+	echo "Usage: $(basename "$0") {build|push|clean|files|prepare} [POD_FILE_NAME]" >&2
+	exit 1
+}
+
+get_image_date(){
+	$PODMAN_CMD inspect "$POD_IMAGE" |grep 'Created' |cut -f 2 -d ':' |sed -e 's%^.*\([[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\}\).*$%\1%'
+}
+
+
+ACTION="$1"
+[ "$ACTION" ] || usage
+shift
+[ -z "$1" ] || POD_FILE="$1"
+
+TAR_FILE="$POD_FILE.tar"
+VER_FILE="$POD_FILE.version"
+FILE_LIST="$TAR_FILE $VER_FILE"
+
+case "$ACTION" in
+	build)
+		#DATE_TAG="$(date +%F)"
+        	#podman build -f  Dockerfile --tag "$POD_IMAGE_NAME:$DATE_TAG"
+		#podman image tag "$POD_IMAGE_NAME:$DATE_TAG" $POD_IMAGE
+        	podman build -f  Dockerfile --tag "$POD_IMAGE"
+		DATE_TAG="$(get_image_date)"
+		podman image tag $POD_IMAGE "$POD_IMAGE_NAME:$DATE_TAG"
+
+		;;
+	prepare)
+		$PODMAN_CMD pull --tls-verify=false "$POD_IMAGE"
+		get_image_date > "$VER_FILE"
+		$PODMAN_CMD save -o "$TAR_FILE" "$POD_IMAGE"
+		$PODMAN_CMD image rm "$POD_IMAGE"
+		;;
+	files)
+		for f in $FILE_LIST ; do echo "$f" ; done
+		;;
+	clean)
+		rm -f $FILE_LIST
+		;;
+	push)
+		DATE_TAG="$(get_image_date)"
+		podman login docker.io
+		podman push "$POD_IMAGE_NAME:$DATE_TAG"
+		podman push $POD_IMAGE
+		;;
+	*)
+		usage
+		;;
+esac
+
+exit 0
+
+
