@@ -59,7 +59,7 @@ if [ "$passdb" ] && [ -s "$passdb" ] ; then
 	# if users file is not present, generate a 'fake' one
 	# to generate users accounts but preserve passwords
 	# file format:' username:*' ...
-	if [ -f "$users" ] && [ -s "$users" ]; then
+	if [ ! -s "$users" ] ; then
 		pdbedit -s "$config" -L |sed -e 's%:.*$%:*%' > "$users"
 	fi
 fi
