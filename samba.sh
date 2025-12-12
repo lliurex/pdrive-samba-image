@@ -54,6 +54,16 @@ else
 
 fi
 
+# Check for an existing passdb.tdb file
+if [ "$passdb" ] && [ -s "$passdb" ] ; then
+	# if users file is not present, generate a 'fake' one
+	# to generate users accounts but preserve passwords
+	# file format:' username:*' ...
+	if [ -f "$users" ] && [ -s "$users" ]; then
+		pdbedit -s "$config" -L |sed -e 's%:.*$%:*%' > "$users"
+	fi
+fi
+
 # Check if users file is not a directory
 if [ -d "$users" ]; then
 
@@ -96,6 +106,7 @@ if [ -f "$users" ] && [ -s "$users" ]; then
     done < <(tr -d '\r' < "$users")
 
 else
+   # TODO: rethink about 'single user mode' ...
 
     add_user "$config" "$USER" "$UID" "$group" "$GID" "$PASS" "$share" || { echo "Failed to add user $USER"; exit 1; }
 

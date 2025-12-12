@@ -87,6 +87,7 @@ conf_share="$share/config"
 secret="/run/secrets/pass"
 config="/etc/samba/smb.conf"
 users="/etc/samba/users.conf"
+passdb="/var/lib/samba/private/passdb.tdb"
 
 # Create directories if missing
 mkdir -p /var/lib/samba/sysvol
